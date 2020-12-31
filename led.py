@@ -52,8 +52,9 @@ class Led(object):
 
     def set_state(self, state, t):
         with self._mu:
-            if self._state == state:
-                return
+            # Put the LED into BLINK mode if we're transitioning from ON to OFF.
+            if state == OFF and self._state == ON:
+                state = BLINK
             self._state = state
             self._state_changed = t
 
@@ -101,7 +102,7 @@ class LightShow(object):
         door = self.doors.get(door_id, self.doors[None])
         door_open = str(msg.payload) == '0'
         door_open_str = 'open' if door_open else 'closed'
-        state = ON if door_open else BLINK
+        state = ON if door_open else OFF
         print('Door: %s (id=%s) is %s (state=%s)' %
               (door.name, door_id, door_open_str, state))
         self.leds[door.pin].set_state(state, ts())
